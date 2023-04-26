@@ -1,10 +1,10 @@
 const { floor, min, sqrt } = Math;
 
-const newVector = (x, y, z) => ({ x, y, z });
+const vector = (x, y, z) => ({ x, y, z });
 const Vector = {
-    times: (k, { x, y, z }) => newVector(k * x, k * y, k * z),
-    minus: (v1, v2) => newVector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z),
-    plus: (v1, v2) => newVector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z),
+    times: (k, { x, y, z }) => vector(k * x, k * y, k * z),
+    minus: (v1, v2) => vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z),
+    plus: (v1, v2) => vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z),
     dot: (v1, v2) => v1.x * v2.x + v1.y * v2.y + v1.z * v2.z,
     mag: ({ x, y, z }) => sqrt(x * x + y * y + z * z),
     norm: v => {
@@ -12,34 +12,34 @@ const Vector = {
         const div = (mag === 0) ? Infinity : 1.0 / mag;
         return Vector.times(div, v);
     },
-    cross: (v1, v2) => newVector(
+    cross: (v1, v2) => vector(
         v1.y * v2.z - v1.z * v2.y,
         v1.z * v2.x - v1.x * v2.z,
         v1.x * v2.y - v1.y * v2.x
     )
 };
 
-const newColor = (r, g, b) => ({ r, g, b });
-const black = newColor(0.0, 0.0, 0.0);
+const color = (r, g, b) => ({ r, g, b });
+const black = color(0.0, 0.0, 0.0);
 const Color = {
     black,
     background: black,
     defaultColor: black,
-    white: newColor(1.0, 1.0, 1.0),
-    grey: newColor(0.5, 0.5, 0.5),
-    scale: (k, { r, g, b }) => newColor(k * r, k * g, k * b),
-    plus: (v1, v2) => newColor(v1.r + v2.r, v1.g + v2.g, v1.b + v2.b),
-    times: (v1, v2) => newColor(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b),
-    toDrawingColor: ({ r, g, b }) => newColor(
+    white: color(1.0, 1.0, 1.0),
+    grey: color(0.5, 0.5, 0.5),
+    scale: (k, { r, g, b }) => color(k * r, k * g, k * b),
+    plus: (v1, v2) => color(v1.r + v2.r, v1.g + v2.g, v1.b + v2.b),
+    times: (v1, v2) => color(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b),
+    toDrawingColor: ({ r, g, b }) => color(
         floor(min(r, 1) * 255),
         floor(min(g, 1) * 255),
         floor(min(b, 1) * 255)
     )
 };
 
-const newCamera = (pos, lookAt) => {
+const camera = (pos, lookAt) => {
     const forward = Vector.norm(Vector.minus(lookAt, pos));
-    const right = Vector.times(1.5, Vector.norm(Vector.cross(forward, newVector(0.0, -1.0, 0.0))));
+    const right = Vector.times(1.5, Vector.norm(Vector.cross(forward, vector(0.0, -1.0, 0.0))));
     return { pos, forward, right, up: Vector.times(1.5, Vector.norm(Vector.cross(forward, right))) };
 };
 
@@ -178,17 +178,17 @@ class RayTracer {
 
 const defaultScene = () => ({
     things: [
-        new Plane(newVector(0.0, 1.0, 0.0), 0.0, Surfaces.checkerboard),
-        new Sphere(newVector(0.0, 1.0, -0.25), 1.0, Surfaces.shiny),
-        new Sphere(newVector(-1.0, 0.5, 1.5), 0.5, Surfaces.shiny)
+        new Plane(vector(0.0, 1.0, 0.0), 0.0, Surfaces.checkerboard),
+        new Sphere(vector(0.0, 1.0, -0.25), 1.0, Surfaces.shiny),
+        new Sphere(vector(-1.0, 0.5, 1.5), 0.5, Surfaces.shiny)
     ],
     lights: [
-        { pos: newVector(-2.0, 2.5, 0.0), color: newColor(0.49, 0.07, 0.07) },
-        { pos: newVector(1.5, 2.5, 1.5), color: newColor(0.07, 0.07, 0.49) },
-        { pos: newVector(1.5, 2.5, -1.5), color: newColor(0.07, 0.49, 0.071) },
-        { pos: newVector(0.0, 3.5, 0.0), color: newColor(0.21, 0.21, 0.35) }
+        { pos: vector(-2.0, 2.5, 0.0), color: color(0.49, 0.07, 0.07) },
+        { pos: vector(1.5, 2.5, 1.5), color: color(0.07, 0.07, 0.49) },
+        { pos: vector(1.5, 2.5, -1.5), color: color(0.07, 0.49, 0.071) },
+        { pos: vector(0.0, 3.5, 0.0), color: color(0.21, 0.21, 0.35) }
     ],
-    camera: newCamera(newVector(3.0, 2.0, 4.0), newVector(-1.0, 0.5, 0.0))
+    camera: camera(vector(3.0, 2.0, 4.0), vector(-1.0, 0.5, 0.0))
 });
 
 const exec = (width, height) => {
@@ -202,9 +202,9 @@ const exec = (width, height) => {
 const size = 256;
 const render = () => new Promise(resolve => {
     requestAnimationFrame(() => {
-        console.time('raytrace');
+        console.time('raytrace JS');
         exec(size, size);
-        console.timeEnd('raytrace');
+        console.timeEnd('raytrace JS');
         resolve();
     });
 });

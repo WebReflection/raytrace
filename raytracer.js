@@ -239,9 +239,9 @@ const exec = (width, height) => {
 const size = 256;
 const render = () => new Promise(resolve => {
     requestAnimationFrame(() => {
-        console.time('raytrace');
+        console.time('raytrace TS');
         exec(size, size);
-        console.timeEnd('raytrace');
+        console.timeEnd('raytrace TS');
         resolve();
     });
 });
