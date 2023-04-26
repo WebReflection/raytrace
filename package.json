@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.0.4"
+  }
+}
