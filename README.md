@@ -18,3 +18,7 @@ The [original TypeScript version](https://github.com/Microsoft/TypeScriptSamples
   * `npm i`
   * `npm run build`
   * run any local server to test `raytracer.html` or `rt.vanilla.html` on your localhost
+
+### Could the vanilla version have TS too?
+
+Check the [JSDoc TS](https://github.com/WebReflection/raytrace/blob/jsdoc-ts/rt.vanilla.js) annotated file which is fully compliant with TS and it still performs as good as the not-annotated file.
