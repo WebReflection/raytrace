@@ -1,9 +1,10 @@
 {
   "private": true,
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "jsdoc-ts": "tsc --target ES2022 --checkJs --noEmit ./rt.vanilla.js"
   },
-  "license": "ISC",
+  "license": "Apache 2.0",
   "devDependencies": {
     "typescript": "^5.0.4"
   }
