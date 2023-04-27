@@ -1,7 +1,4 @@
 class Vector {
-    x;
-    y;
-    z;
     constructor(x, y, z) {
         this.x = x;
         this.y = y;
@@ -22,9 +19,6 @@ class Vector {
     }
 }
 class Color {
-    r;
-    g;
-    b;
     constructor(r, g, b) {
         this.r = r;
         this.g = g;
@@ -33,11 +27,11 @@ class Color {
     static scale(k, v) { return new Color(k * v.r, k * v.g, k * v.b); }
     static plus(v1, v2) { return new Color(v1.r + v2.r, v1.g + v2.g, v1.b + v2.b); }
     static times(v1, v2) { return new Color(v1.r * v2.r, v1.g * v2.g, v1.b * v2.b); }
-    static white = new Color(1.0, 1.0, 1.0);
-    static grey = new Color(0.5, 0.5, 0.5);
-    static black = new Color(0.0, 0.0, 0.0);
-    static background = Color.black;
-    static defaultColor = Color.black;
+    static { this.white = new Color(1.0, 1.0, 1.0); }
+    static { this.grey = new Color(0.5, 0.5, 0.5); }
+    static { this.black = new Color(0.0, 0.0, 0.0); }
+    static { this.background = Color.black; }
+    static { this.defaultColor = Color.black; }
     static toDrawingColor(c) {
         var legalize = d => d > 1 ? 1 : d;
         return {
@@ -48,10 +42,6 @@ class Color {
     }
 }
 class Camera {
-    pos;
-    forward;
-    right;
-    up;
     constructor(pos, lookAt) {
         this.pos = pos;
         var down = new Vector(0.0, -1.0, 0.0);
@@ -61,9 +51,6 @@ class Camera {
     }
 }
 class Sphere {
-    center;
-    surface;
-    radius2;
     constructor(center, radius, surface) {
         this.center = center;
         this.surface = surface;
@@ -89,9 +76,6 @@ class Sphere {
     }
 }
 class Plane {
-    surface;
-    normal;
-    intersect;
     constructor(norm, offset, surface) {
         this.surface = surface;
         this.normal = function (pos) { return norm; };
@@ -137,7 +121,9 @@ var Surfaces;
     };
 })(Surfaces || (Surfaces = {}));
 class RayTracer {
-    maxDepth = 5;
+    constructor() {
+        this.maxDepth = 5;
+    }
     intersections(ray, scene) {
         var closest = +Infinity;
         var closestInter = undefined;
