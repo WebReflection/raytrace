@@ -43,6 +43,7 @@ const camera = (pos, lookAt) => {
     return { pos, forward, right, up: Vector.times(1.5, Vector.norm(Vector.cross(forward, right))) };
 };
 
+const geo = (thing, ray, dist) => ({ thing, ray, dist });
 class Sphere {
     constructor(center, radius, surface) {
         this.center = center;
@@ -52,16 +53,16 @@ class Sphere {
     normal(pos) {
         return Vector.norm(Vector.minus(pos, this.center));
     }
-    intersect(ray) {
-        const eo = Vector.minus(this.center, ray.start);
-        const v = Vector.dot(eo, ray.dir);
+    intersect(r) {
+        const eo = Vector.minus(this.center, r.start);
+        const v = Vector.dot(eo, r.dir);
         let dist = 0;
         if (v >= 0) {
             const disc = this.radius2 - (Vector.dot(eo, eo) - v * v);
             if (disc >= 0)
                 dist = v - sqrt(disc);
         }
-        return dist === 0 ? null : { thing: this, ray, dist };
+        return dist === 0 ? null : geo(this, r, dist);
     }
 }
 
@@ -74,14 +75,10 @@ class Plane {
     normal(_) {
         return this.norm;
     }
-    intersect(ray) {
+    intersect(r) {
         const { norm, offset } = this;
-        const denom = Vector.dot(norm, ray.dir);
-        return denom > 0 ? null : {
-            ray,
-            thing: this,
-            dist: (Vector.dot(norm, ray.start) + offset) / (-denom)
-        };
+        const denom = Vector.dot(norm, r.dir);
+        return denom > 0 ? null : geo(this, r, (Vector.dot(norm, r.start) + offset) / (-denom));
     }
 }
 
@@ -100,15 +97,16 @@ const Surfaces = {
     }
 };
 
+const ray = (start, dir) => ({ start, dir });
 class RayTracer {
     constructor() {
         this.maxDepth = 5;
     }
-    intersections(ray, scene) {
+    intersections(r, scene) {
         let closest = +Infinity;
         let closestInter = null;
         for (const thing of scene.things) {
-            const inter = thing.intersect(ray);
+            const inter = thing.intersect(r);
             if (inter != null && inter.dist < closest) {
                 closestInter = inter;
                 closest = inter.dist;
@@ -116,11 +114,11 @@ class RayTracer {
         }
         return closestInter;
     }
-    testRay(ray, scene) {
-        return this.intersections(ray, scene)?.dist;
+    testRay(r, scene) {
+        return this.intersections(r, scene)?.dist;
     }
-    traceRay(ray, scene, depth) {
-        const isect = this.intersections(ray, scene);
+    traceRay(r, scene, depth) {
+        const isect = this.intersections(r, scene);
         return isect == null ? Color.background : this.shade(isect, scene, depth);
     }
     shade({ thing, dist, ray: { start, dir } }, scene, depth) {
@@ -133,26 +131,25 @@ class RayTracer {
         );
     }
     getReflectionColor({ surface }, pos, _, rd, scene, depth) {
-        return Color.scale(surface.reflect(pos), this.traceRay({ start: pos, dir: rd }, scene, depth + 1));
+        return Color.scale(surface.reflect(pos), this.traceRay(ray(pos, rd), scene, depth + 1));
     }
     getNaturalColor({ surface }, pos, norm, rd, scene) {
-        return scene.lights.reduce(
-            (col, light) => {
-                const ldis = Vector.minus(light.pos, pos);
-                const livec = Vector.norm(ldis);
-                const neatIsect = this.testRay({ start: pos, dir: livec }, scene);
-                if (neatIsect != null && neatIsect <= Vector.mag(ldis))
-                    return col;
-                const illum = Vector.dot(livec, norm);
-                const lcolor = illum > 0 ? Color.scale(illum, light.color) : Color.defaultColor;
-                const specular = Vector.dot(livec, Vector.norm(rd));
-                const scolor = specular > 0 ?
-                    Color.scale(Math.pow(specular, surface.roughness), light.color) :
-                    Color.defaultColor;
-                return Color.plus(col, Color.plus(Color.times(surface.diffuse(pos), lcolor), Color.times(surface.specular(pos), scolor)));
-            },
-            Color.defaultColor
-        );
+        let col = Color.defaultColor;
+        for (const light of scene.lights) {
+            const ldis = Vector.minus(light.pos, pos);
+            const livec = Vector.norm(ldis);
+            const neatIsect = this.testRay(ray(pos, livec), scene);
+            if (neatIsect != null && neatIsect <= Vector.mag(ldis))
+                continue;
+            const illum = Vector.dot(livec, norm);
+            const lcolor = illum > 0 ? Color.scale(illum, light.color) : Color.defaultColor;
+            const specular = Vector.dot(livec, Vector.norm(rd));
+            const scolor = specular > 0 ?
+                Color.scale(Math.pow(specular, surface.roughness), light.color) :
+                Color.defaultColor;
+            col = Color.plus(col, Color.plus(Color.times(surface.diffuse(pos), lcolor), Color.times(surface.specular(pos), scolor)));
+        }
+        return col;
     }
     render(scene, ctx, screenWidth, screenHeight) {
         const recenterX = x => (x - (screenWidth / 2.0)) / 2.0 / screenWidth;
@@ -167,7 +164,7 @@ class RayTracer {
         for (let y = 0; y < screenHeight; y++) {
             for (let x = 0; x < screenWidth; x++) {
                 const { r, g, b } = Color.toDrawingColor(
-                    this.traceRay({ start: camera.pos, dir: getPoint(x, y, camera) }, scene, 0)
+                    this.traceRay(ray(camera.pos, getPoint(x, y, camera)), scene, 0)
                 );
                 ctx.fillStyle = `rgb(${r},${g},${b})`;
                 ctx.fillRect(x, y, 1, 1);
