@@ -284,4 +284,12 @@ const render = () => new Promise<void>(resolve => {
     });
 });
 
-render().then(render).then(render).then(render);
+render()
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(() => {
+        document.documentElement.classList.add('done');
+    });

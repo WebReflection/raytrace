@@ -1,0 +1,16 @@
+html {
+  background-color: black;
+}
+
+html.done canvas {
+  animation: blur 1s;
+}
+
+@keyframes blur {
+  from {
+    filter: blur(5px);
+  }
+  to {
+    filter: blur(0);
+  }
+}

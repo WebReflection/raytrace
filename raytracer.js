@@ -231,5 +231,13 @@ const render = () => new Promise(resolve => {
         resolve();
     });
 });
-render().then(render).then(render).then(render);
+render()
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(() => {
+    document.documentElement.classList.add('done');
+});
 //# sourceMappingURL=raytracer.js.map

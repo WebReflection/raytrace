@@ -176,6 +176,7 @@ class RayTracer {
     }
 }
 
+const light = (pos, color) => ({ pos, color });
 const defaultScene = () => ({
     things: [
         new Plane(vector(0.0, 1.0, 0.0), 0.0, Surfaces.checkerboard),
@@ -183,10 +184,10 @@ const defaultScene = () => ({
         new Sphere(vector(-1.0, 0.5, 1.5), 0.5, Surfaces.shiny)
     ],
     lights: [
-        { pos: vector(-2.0, 2.5, 0.0), color: color(0.49, 0.07, 0.07) },
-        { pos: vector(1.5, 2.5, 1.5), color: color(0.07, 0.07, 0.49) },
-        { pos: vector(1.5, 2.5, -1.5), color: color(0.07, 0.49, 0.071) },
-        { pos: vector(0.0, 3.5, 0.0), color: color(0.21, 0.21, 0.35) }
+        light(vector(-2.0, 2.5, 0.0), color(0.49, 0.07, 0.07)),
+        light(vector(1.5, 2.5, 1.5), color(0.07, 0.07, 0.49)),
+        light(vector(1.5, 2.5, -1.5), color(0.07, 0.49, 0.071)),
+        light(vector(0.0, 3.5, 0.0), color(0.21, 0.21, 0.35))
     ],
     camera: camera(vector(3.0, 2.0, 4.0), vector(-1.0, 0.5, 0.0))
 });
@@ -209,4 +210,12 @@ const render = () => new Promise(resolve => {
     });
 });
 
-render().then(render).then(render).then(render);
+render()
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(render)
+    .then(() => {
+        document.documentElement.classList.add('done');
+    });
