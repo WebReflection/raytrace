@@ -1,7 +1,9 @@
 {
   "private": true,
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc -p .",
+    "dexnode:vanilla": "npx dexnode --out v8.js.log --redirect-code-traces-to=./v8.vanilla.log trace.vanilla.js",
+    "dexnode:ts": "npx dexnode --out v8.ts.log --redirect-code-traces-to=./v8.ts.log trace.ts.js"
   },
   "license": "ISC",
   "devDependencies": {
