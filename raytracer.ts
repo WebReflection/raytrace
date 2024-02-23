@@ -1,3 +1,4 @@
+const { floor, min, sqrt } = Math;
 
 class Vector {
     constructor(public x: number,
@@ -8,7 +9,7 @@ class Vector {
     static minus(v1: Vector, v2: Vector) { return new Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
     static plus(v1: Vector, v2: Vector) { return new Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
     static dot(v1: Vector, v2: Vector) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
-    static mag(v: Vector) { return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
+    static mag(v: Vector) { return sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
     static norm(v: Vector) {
         var mag = Vector.mag(v);
         var div = (mag === 0) ? Infinity : 1.0 / mag;
@@ -35,11 +36,10 @@ class Color {
     static background = Color.black;
     static defaultColor = Color.black;
     static toDrawingColor(c: Color) {
-        var legalize = d => d > 1 ? 1 : d;
         return {
-            r: Math.floor(legalize(c.r) * 255),
-            g: Math.floor(legalize(c.g) * 255),
-            b: Math.floor(legalize(c.b) * 255)
+            r: floor(min(c.r) * 255),
+            g: floor(min(c.g) * 255),
+            b: floor(min(c.b) * 255)
         }
     }
 }
@@ -134,14 +134,14 @@ class Plane implements Thing {
     }
 }
 
-module Surfaces {
-    export var shiny: Surface = {
+class Surfaces {
+    static shiny: Surface = {
         diffuse: function(pos) { return Color.white; },
         specular: function(pos) { return Color.grey; },
         reflect: function(pos) { return 0.7; },
         roughness: 250
     }
-    export var checkerboard: Surface = {
+    static checkerboard: Surface = {
         diffuse: function(pos) {
             if ((Math.floor(pos.z) + Math.floor(pos.x)) % 2 !== 0) {
                 return Color.white;
