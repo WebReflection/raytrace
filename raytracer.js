@@ -208,11 +208,12 @@ class RayTracer {
             var recenterY = y => -(y - (screenHeight / 2.0)) / 2.0 / screenHeight;
             return Vector.norm(Vector.plus(camera.forward, Vector.plus(Vector.times(recenterX(x), camera.right), Vector.times(recenterY(y), camera.up))));
         };
+        const { camera } = scene;
         for (var y = 0; y < screenHeight; y++) {
             for (var x = 0; x < screenWidth; x++) {
-                var color = this.traceRay({ start: scene.camera.pos, dir: getPoint(x, y, scene.camera) }, scene, 0);
-                var c = Color.toDrawingColor(color);
-                ctx.fillStyle = "rgb(" + String(c.r) + ", " + String(c.g) + ", " + String(c.b) + ")";
+                var color = this.traceRay({ start: camera.pos, dir: getPoint(x, y, camera) }, scene, 0);
+                const { r, g, b } = Color.toDrawingColor(color);
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
                 ctx.fillRect(x, y, 1, 1);
             }
         }
