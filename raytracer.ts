@@ -118,18 +118,15 @@ class Sphere implements Thing {
 }
 
 class Plane implements Thing {
-    public normal: (pos: Vector) =>Vector;
-    public intersect: (ray: Ray) =>Intersection;
-    constructor(norm: Vector, offset: number, public surface: Surface) {
-        this.normal = function(pos: Vector) { return norm; }
-        this.intersect = function(ray: Ray): Intersection {
-            var denom = Vector.dot(norm, ray.dir);
-            if (denom > 0) {
-                return null;
-            } else {
-                var dist = (Vector.dot(norm, ray.start) + offset) / (-denom);
-                return { thing: this, ray: ray, dist: dist };
-            }
+    constructor(public norm: Vector, public offset: number, public surface: Surface) {}
+    normal(_pos: Vector) { return this.norm; }
+    intersect(ray: Ray): Intersection {
+        var denom = Vector.dot(this.norm, ray.dir);
+        if (denom > 0) {
+            return null;
+        } else {
+            var dist = (Vector.dot(this.norm, ray.start) + this.offset) / (-denom);
+            return { thing: this, ray: ray, dist: dist };
         }
     }
 }
@@ -168,8 +165,8 @@ class RayTracer {
     private intersections(ray: Ray, scene: Scene) {
         var closest = +Infinity;
         var closestInter: Intersection = undefined;
-        for (var i in scene.things) {
-            var inter = scene.things[i].intersect(ray);
+        for (const thing of scene.things) {
+            var inter = thing.intersect(ray);
             if (inter != null && inter.dist < closest) {
                 closestInter = inter;
                 closest = inter.dist;
@@ -189,7 +186,7 @@ class RayTracer {
 
     private traceRay(ray: Ray, scene: Scene, depth: number): Color {
         var isect = this.intersections(ray, scene);
-        if (isect === undefined) {
+        if (isect == null) {
             return Color.background;
         } else {
             return this.shade(isect, scene, depth);

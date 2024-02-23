@@ -89,22 +89,24 @@ class Sphere {
     }
 }
 class Plane {
+    norm;
+    offset;
     surface;
-    normal;
-    intersect;
     constructor(norm, offset, surface) {
+        this.norm = norm;
+        this.offset = offset;
         this.surface = surface;
-        this.normal = function (pos) { return norm; };
-        this.intersect = function (ray) {
-            var denom = Vector.dot(norm, ray.dir);
-            if (denom > 0) {
-                return null;
-            }
-            else {
-                var dist = (Vector.dot(norm, ray.start) + offset) / (-denom);
-                return { thing: this, ray: ray, dist: dist };
-            }
-        };
+    }
+    normal(_pos) { return this.norm; }
+    intersect(ray) {
+        var denom = Vector.dot(this.norm, ray.dir);
+        if (denom > 0) {
+            return null;
+        }
+        else {
+            var dist = (Vector.dot(this.norm, ray.start) + this.offset) / (-denom);
+            return { thing: this, ray: ray, dist: dist };
+        }
     }
 }
 class Surfaces {
@@ -140,8 +142,8 @@ class RayTracer {
     intersections(ray, scene) {
         var closest = +Infinity;
         var closestInter = undefined;
-        for (var i in scene.things) {
-            var inter = scene.things[i].intersect(ray);
+        for (const thing of scene.things) {
+            var inter = thing.intersect(ray);
             if (inter != null && inter.dist < closest) {
                 closestInter = inter;
                 closest = inter.dist;
@@ -160,7 +162,7 @@ class RayTracer {
     }
     traceRay(ray, scene, depth) {
         var isect = this.intersections(ray, scene);
-        if (isect === undefined) {
+        if (isect == null) {
             return Color.background;
         }
         else {
