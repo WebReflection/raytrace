@@ -1,3 +1,4 @@
+const { floor, min, sqrt } = Math;
 class Vector {
     constructor(x, y, z) {
         this.x = x;
@@ -8,7 +9,7 @@ class Vector {
     static minus(v1, v2) { return new Vector(v1.x - v2.x, v1.y - v2.y, v1.z - v2.z); }
     static plus(v1, v2) { return new Vector(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z); }
     static dot(v1, v2) { return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z; }
-    static mag(v) { return Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
+    static mag(v) { return sqrt(v.x * v.x + v.y * v.y + v.z * v.z); }
     static norm(v) {
         var mag = Vector.mag(v);
         var div = (mag === 0) ? Infinity : 1.0 / mag;
@@ -33,11 +34,10 @@ class Color {
     static { this.background = Color.black; }
     static { this.defaultColor = Color.black; }
     static toDrawingColor(c) {
-        var legalize = d => d > 1 ? 1 : d;
         return {
-            r: Math.floor(legalize(c.r) * 255),
-            g: Math.floor(legalize(c.g) * 255),
-            b: Math.floor(legalize(c.b) * 255)
+            r: floor(min(c.r, 1) * 255),
+            g: floor(min(c.g, 1) * 255),
+            b: floor(min(c.b, 1) * 255)
         };
     }
 }
@@ -77,29 +77,30 @@ class Sphere {
 }
 class Plane {
     constructor(norm, offset, surface) {
+        this.norm = norm;
+        this.offset = offset;
         this.surface = surface;
-        this.normal = function (pos) { return norm; };
-        this.intersect = function (ray) {
-            var denom = Vector.dot(norm, ray.dir);
-            if (denom > 0) {
-                return null;
-            }
-            else {
-                var dist = (Vector.dot(norm, ray.start) + offset) / (-denom);
-                return { thing: this, ray: ray, dist: dist };
-            }
-        };
+    }
+    normal(_pos) { return this.norm; }
+    intersect(ray) {
+        var denom = Vector.dot(this.norm, ray.dir);
+        if (denom > 0) {
+            return null;
+        }
+        else {
+            var dist = (Vector.dot(this.norm, ray.start) + this.offset) / (-denom);
+            return { thing: this, ray: ray, dist: dist };
+        }
     }
 }
-var Surfaces;
-(function (Surfaces) {
-    Surfaces.shiny = {
+class Surfaces {
+    static { this.shiny = {
         diffuse: function (pos) { return Color.white; },
         specular: function (pos) { return Color.grey; },
         reflect: function (pos) { return 0.7; },
         roughness: 250
-    };
-    Surfaces.checkerboard = {
+    }; }
+    static { this.checkerboard = {
         diffuse: function (pos) {
             if ((Math.floor(pos.z) + Math.floor(pos.x)) % 2 !== 0) {
                 return Color.white;
@@ -118,8 +119,8 @@ var Surfaces;
             }
         },
         roughness: 150
-    };
-})(Surfaces || (Surfaces = {}));
+    }; }
+}
 class RayTracer {
     constructor() {
         this.maxDepth = 5;
@@ -127,8 +128,8 @@ class RayTracer {
     intersections(ray, scene) {
         var closest = +Infinity;
         var closestInter = undefined;
-        for (var i in scene.things) {
-            var inter = scene.things[i].intersect(ray);
+        for (const thing of scene.things) {
+            var inter = thing.intersect(ray);
             if (inter != null && inter.dist < closest) {
                 closestInter = inter;
                 closest = inter.dist;
@@ -147,7 +148,7 @@ class RayTracer {
     }
     traceRay(ray, scene, depth) {
         var isect = this.intersections(ray, scene);
-        if (isect === undefined) {
+        if (isect == null) {
             return Color.background;
         }
         else {
@@ -193,11 +194,12 @@ class RayTracer {
             var recenterY = y => -(y - (screenHeight / 2.0)) / 2.0 / screenHeight;
             return Vector.norm(Vector.plus(camera.forward, Vector.plus(Vector.times(recenterX(x), camera.right), Vector.times(recenterY(y), camera.up))));
         };
+        const { camera } = scene;
         for (var y = 0; y < screenHeight; y++) {
             for (var x = 0; x < screenWidth; x++) {
-                var color = this.traceRay({ start: scene.camera.pos, dir: getPoint(x, y, scene.camera) }, scene, 0);
-                var c = Color.toDrawingColor(color);
-                ctx.fillStyle = "rgb(" + String(c.r) + ", " + String(c.g) + ", " + String(c.b) + ")";
+                var color = this.traceRay({ start: camera.pos, dir: getPoint(x, y, camera) }, scene, 0);
+                const { r, g, b } = Color.toDrawingColor(color);
+                ctx.fillStyle = `rgb(${r},${g},${b})`;
                 ctx.fillRect(x, y, 1, 1);
             }
         }
