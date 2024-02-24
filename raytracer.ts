@@ -37,9 +37,9 @@ class Color {
     static defaultColor = Color.black;
     static toDrawingColor(c: Color) {
         return {
-            r: floor(min(c.r) * 255),
-            g: floor(min(c.g) * 255),
-            b: floor(min(c.b) * 255)
+            r: floor(min(c.r, 1) * 255),
+            g: floor(min(c.g, 1) * 255),
+            b: floor(min(c.b, 1) * 255)
         }
     }
 }
